@@ -1,0 +1,231 @@
+From 3e0a2cad450959cd1f16d10076868af06448abf3 Mon Sep 17 00:00:00 2001
+From: lichenggang <lichenggang@deepin.org>
+Date: Mon, 25 Aug 2025 17:55:05 +0800
+Subject: [PATCH] feat: add sw_64 support
+
+---
+ build/autoconf/config.guess                      | 3 +++
+ build/autoconf/config.sub                        | 1 +
+ intl/icu/source/config.guess                     | 3 +++
+ intl/icu/source/config.sub                       | 1 +
+ intl/icu/source/i18n/double-conversion-utils.h   | 1 +
+ js/moz.configure                                 | 2 ++
+ js/src/ctypes/libffi/config.guess                | 3 +++
+ js/src/jit/LIR.h                                 | 2 ++
+ memory/build/mozjemalloc.cpp                     | 4 +++-
+ mfbt/double-conversion/double-conversion/utils.h | 2 +-
+ mfbt/tests/TestPoisonArea.cpp                    | 3 +++
+ nsprpub/build/autoconf/config.guess              | 3 +++
+ nsprpub/build/autoconf/config.sub                | 1 +
+ python/mozbuild/mozbuild/configure/constants.py  | 2 ++
+ 14 files changed, 29 insertions(+), 2 deletions(-)
+
+diff --git a/build/autoconf/config.guess b/build/autoconf/config.guess
+index 7f76b6228..2f2bf5936 100755
+--- a/build/autoconf/config.guess
++++ b/build/autoconf/config.guess
+@@ -1143,6 +1143,9 @@ EOF
+     sparc:Linux:*:* | sparc64:Linux:*:*)
+ 	GUESS=$UNAME_MACHINE-unknown-linux-$LIBC
+ 	;;
++    sw_64*:Linux:*:*)
++	GUESS=$UNAME_MACHINE-unknown-linux-$LIBC
++	exit ;;	
+     tile*:Linux:*:*)
+ 	GUESS=$UNAME_MACHINE-unknown-linux-$LIBC
+ 	;;
+diff --git a/build/autoconf/config.sub b/build/autoconf/config.sub
+index dba16e84c..a581f89fb 100755
+--- a/build/autoconf/config.sub
++++ b/build/autoconf/config.sub
+@@ -1266,6 +1266,7 @@ case $cpu-$vendor in
+ 			| sparc | sparc64 | sparc64b | sparc64v | sparc86x | sparclet \
+ 			| sparclite \
+ 			| sparcv8 | sparcv9 | sparcv9b | sparcv9v | sv1 | sx* \
++			| sw_64 \
+ 			| spu \
+ 			| tahoe \
+ 			| thumbv7* \
+diff --git a/intl/icu/source/config.guess b/intl/icu/source/config.guess
+index 31e01efec..a0314a727 100644
+--- a/intl/icu/source/config.guess
++++ b/intl/icu/source/config.guess
+@@ -1029,6 +1029,9 @@ EOF
+     sparc:Linux:*:* | sparc64:Linux:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
++    sw_64*:Linux:*:*)
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
++	exit ;;	
+     tile*:Linux:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+diff --git a/intl/icu/source/config.sub b/intl/icu/source/config.sub
+index fb5794786..825c8d831 100644
+--- a/intl/icu/source/config.sub
++++ b/intl/icu/source/config.sub
+@@ -307,6 +307,7 @@ case $basic_machine in
+ 	| sh64 | sh64le \
+ 	| sparc | sparc64 | sparc64b | sparc64v | sparc86x | sparclet | sparclite \
+ 	| sparcv8 | sparcv9 | sparcv9b | sparcv9v \
++	| sw_64 \
+ 	| spu \
+ 	| tahoe | tic4x | tic54x | tic55x | tic6x | tic80 | tron \
+ 	| ubicom32 \
+diff --git a/intl/icu/source/i18n/double-conversion-utils.h b/intl/icu/source/i18n/double-conversion-utils.h
+index 303668f93..6f4bea32c 100644
+--- a/intl/icu/source/i18n/double-conversion-utils.h
++++ b/intl/icu/source/i18n/double-conversion-utils.h
+@@ -149,6 +149,7 @@ int main(int argc, char** argv) {
+     defined(__ARMEL__) || defined(__avr32__) || defined(_M_ARM) || defined(_M_ARM64) || \
+     defined(__hppa__) || defined(__ia64__) || \
+     defined(__mips__) || \
++    defined(__sw_64__) || \
+     defined(__loongarch__) || \
+     defined(__nios2__) || defined(__ghs) || \
+     defined(__powerpc__) || defined(__ppc__) || defined(__ppc64__) || \
+diff --git a/js/moz.configure b/js/moz.configure
+index af11416ec..5c81999b7 100644
+--- a/js/moz.configure
++++ b/js/moz.configure
+@@ -276,6 +276,7 @@ set_config("JS_CODEGEN_LOONG64", jit_codegen.loong64)
+ set_config("JS_CODEGEN_RISCV64", jit_codegen.riscv64)
+ set_config("JS_CODEGEN_X86", jit_codegen.x86)
+ set_config("JS_CODEGEN_X64", jit_codegen.x64)
++set_config("JS_CODEGEN_SW64", jit_codegen.sw_64)
+ set_config("JS_CODEGEN_WASM32", jit_codegen.wasm32)
+ 
+ set_define("JS_CODEGEN_NONE", jit_codegen.none)
+@@ -287,6 +288,7 @@ set_define("JS_CODEGEN_LOONG64", jit_codegen.loong64)
+ set_define("JS_CODEGEN_RISCV64", jit_codegen.riscv64)
+ set_define("JS_CODEGEN_X86", jit_codegen.x86)
+ set_define("JS_CODEGEN_X64", jit_codegen.x64)
++set_config("JS_CODEGEN_SW64", jit_codegen.sw_64)
+ set_define("JS_CODEGEN_WASM32", jit_codegen.wasm32)
+ 
+ 
+diff --git a/js/src/ctypes/libffi/config.guess b/js/src/ctypes/libffi/config.guess
+index faa63aa94..d67aec43f 100644
+--- a/js/src/ctypes/libffi/config.guess
++++ b/js/src/ctypes/libffi/config.guess
+@@ -1051,6 +1051,9 @@ EOF
+     sparc:Linux:*:* | sparc64:Linux:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
++    sw_64*:Linux:*:*)
++	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
++	exit ;;		
+     tile*:Linux:*:*)
+ 	echo ${UNAME_MACHINE}-unknown-linux-${LIBC}
+ 	exit ;;
+diff --git a/js/src/jit/LIR.h b/js/src/jit/LIR.h
+index ecb54c508..6ad5c52aa 100644
+--- a/js/src/jit/LIR.h
++++ b/js/src/jit/LIR.h
+@@ -1939,6 +1939,8 @@ AnyRegister LAllocation::toRegister() const {
+ #  include "jit/loong64/LIR-loong64.h"
+ #elif defined(JS_CODEGEN_RISCV64)
+ #  include "jit/riscv64/LIR-riscv64.h"
++#elif defined(JS_CODEGEN_SW64)
++#  include "jit/none/LIR-none.h"
+ #elif defined(JS_CODEGEN_MIPS32) || defined(JS_CODEGEN_MIPS64)
+ #  if defined(JS_CODEGEN_MIPS32)
+ #    include "jit/mips32/LIR-mips32.h"
+diff --git a/memory/build/mozjemalloc.cpp b/memory/build/mozjemalloc.cpp
+index 54aaac559..a6961a7ff 100644
+--- a/memory/build/mozjemalloc.cpp
++++ b/memory/build/mozjemalloc.cpp
+@@ -219,7 +219,7 @@ using namespace mozilla;
+ #ifndef MALLOC_RUNTIME_CONFIG
+ #  if !defined(__ia64__) && !defined(__sparc__) && !defined(__mips__) &&       \
+       !defined(__aarch64__) && !defined(__powerpc__) && !defined(XP_MACOSX) && \
+-      !defined(__loongarch__)
++      !defined(__loongarch__) && !defined(__sw_64__)
+ #    define MALLOC_STATIC_PAGESIZE 1
+ #  endif
+ #endif
+@@ -485,6 +485,8 @@ static const size_t kChunkSizeMask = kChunkSize - 1;
+ static const size_t gPageSize = 64_KiB;
+ #  elif defined(__loongarch64)
+ static const size_t gPageSize = 16_KiB;
++#elif defined(__sw_64__)
++static const size_t gPageSize = 8_KiB;
+ #  else
+ static const size_t gPageSize = 4_KiB;
+ #  endif
+diff --git a/mfbt/double-conversion/double-conversion/utils.h b/mfbt/double-conversion/double-conversion/utils.h
+index 629ac2b9a..421699efa 100644
+--- a/mfbt/double-conversion/double-conversion/utils.h
++++ b/mfbt/double-conversion/double-conversion/utils.h
+@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
+     defined(__powerpc__) || defined(__ppc__) || defined(__ppc64__) || \
+     defined(_POWER) || defined(_ARCH_PPC) || defined(_ARCH_PPC64) || \
+     defined(__sparc__) || defined(__sparc) || defined(__s390__) || \
+-    defined(__SH4__) || defined(__alpha__) || \
++    defined(__SH4__) || defined(__alpha__) || defined(__sw_64__) || defined(__sw_64) || \
+     defined(_MIPS_ARCH_MIPS32R2) || defined(__ARMEB__) ||\
+     defined(__AARCH64EL__) || defined(__aarch64__) || defined(__AARCH64EB__) || \
+     defined(__riscv) || defined(__e2k__) || \
+diff --git a/mfbt/tests/TestPoisonArea.cpp b/mfbt/tests/TestPoisonArea.cpp
+index 9df392983..ad297ba35 100644
+--- a/mfbt/tests/TestPoisonArea.cpp
++++ b/mfbt/tests/TestPoisonArea.cpp
+@@ -162,6 +162,9 @@
+ #elif defined __loongarch64
+ #  define RETURN_INSTR 0x4c000020 /* jirl zero, ra, 0 */
+ 
++#elif defined __sw_64 || __sw_64__
++#define RETURN_INSTR 0x0bfa0000 /* ret zero,(ra),0 */
++
+ #elif defined __ia64
+ struct ia64_instr {
+   uint32_t mI[4];
+diff --git a/nsprpub/build/autoconf/config.guess b/nsprpub/build/autoconf/config.guess
+index e94095c5f..df02f5f56 100755
+--- a/nsprpub/build/autoconf/config.guess
++++ b/nsprpub/build/autoconf/config.guess
+@@ -1088,6 +1088,9 @@ EOF
+     sparc:Linux:*:* | sparc64:Linux:*:*)
+ 	echo "$UNAME_MACHINE"-unknown-linux-"$LIBC"
+ 	exit ;;
++    sw_64*:Linux:*:*)
++	echo "$UNAME_MACHINE"-unknown-linux-"$LIBC"
++	exit ;;	
+     tile*:Linux:*:*)
+ 	echo "$UNAME_MACHINE"-unknown-linux-"$LIBC"
+ 	exit ;;
+diff --git a/nsprpub/build/autoconf/config.sub b/nsprpub/build/autoconf/config.sub
+index 3d9a8dc3d..b156d74b0 100755
+--- a/nsprpub/build/autoconf/config.sub
++++ b/nsprpub/build/autoconf/config.sub
+@@ -1239,6 +1239,7 @@ case $cpu-$vendor in
+ 			| sparc | sparc64 | sparc64b | sparc64v | sparc86x | sparclet \
+ 			| sparclite \
+ 			| sparcv8 | sparcv9 | sparcv9b | sparcv9v | sv1 | sx* \
++			| sw_64 \
+ 			| spu \
+ 			| tahoe \
+ 			| tic30 | tic4x | tic54x | tic55x | tic6x | tic80 \
+diff --git a/python/mozbuild/mozbuild/configure/constants.py b/python/mozbuild/mozbuild/configure/constants.py
+index a36152651..25c0b57eb 100644
+--- a/python/mozbuild/mozbuild/configure/constants.py
++++ b/python/mozbuild/mozbuild/configure/constants.py
+@@ -60,6 +60,7 @@ CPU_bitness = {
+     "x86": 32,
+     "x86_64": 64,
+     "wasm32": 32,
++    "sw_64": 64,
+ }
+ 
+ CPU = EnumString.subclass(*CPU_bitness.keys())
+@@ -100,6 +101,7 @@ CPU_preprocessor_checks = OrderedDict(
+         ("mips32", "__mips__"),
+         ("riscv64", "__riscv && __riscv_xlen == 64"),
+         ("loongarch64", "__loongarch64"),
++        ("sw_64", "__sw_64"),
+         ("sh4", "__sh__"),
+         ("wasm32", "__wasm32__"),
+     )
+-- 
+2.47.2
+

@@ -24,3 +24,5 @@ python3.12-bug1860051.patch
 python3.12-bug1874280.patch
 python3.12-bug1866829.patch
 Export-js-detail-CanonicalizedNaNBits-on-architectures-th.patch
+uos-sw64-porting.patch
+0001-feat-add-sw_64-support.patch

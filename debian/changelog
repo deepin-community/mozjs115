@@ -1,3 +1,9 @@
+mozjs115 (115.14.0-0deepin3) unstable; urgency=medium
+
+  * add sw64 support.
+
+ -- lichenggang <lichenggang@deepin.org>  Mon, 25 Aug 2025 15:27:19 +0800
+
 mozjs115 (115.14.0-0deepin2) unstable; urgency=medium
 
   * revert 64-bit time_t transition patch.

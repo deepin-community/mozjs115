@@ -1,0 +1,48 @@
+
+--- mozjs115-115.14.0.orig/build/moz.configure/init.configure
++++ mozjs115-115.14.0/build/moz.configure/init.configure
+@@ -560,6 +560,9 @@ def split_triplet(triplet, allow_wasi=Fa
+     elif cpu in ("Alpha", "alpha", "ALPHA"):
+         canonical_cpu = "Alpha"
+         endianness = "little"
++    elif cpu in ('sw_64', 'sw6a', 'sw6b'):
++        canonical_cpu = 'sw_64'
++        endianness = 'little'        
+     elif cpu.startswith("hppa") or cpu == "parisc":
+         canonical_cpu = "hppa"
+         endianness = "big"
+--- mozjs115-115.14.0.orig/js/src/ctypes/libffi/src/types.c
++++ mozjs115-115.14.0/js/src/ctypes/libffi/src/types.c
+@@ -106,3 +106,20 @@ FFI_COMPLEX_TYPEDEF(double, double, cons
+ FFI_COMPLEX_TYPEDEF(longdouble, long double, FFI_LDBL_CONST);
+ #endif
+ #endif
++
++#ifdef __sw_64__
++/* Even if we're not configured to default to 128-bit long double, 
++   maintain binary compatibility, as -mlong-double-128 can be used
++   at any time.  */
++/* Validate the hard-coded number below.  */
++# if defined(__LONG_DOUBLE_128__) && FFI_TYPE_LONGDOUBLE != 4
++#  error FFI_TYPE_LONGDOUBLE out of date
++# endif
++const ffi_type ffi_type_longdouble = { 16, 16, 4, NULL };
++#elif FFI_TYPE_LONGDOUBLE != FFI_TYPE_DOUBLE
++# if HAVE_LONG_DOUBLE_VARIANT
++FFI_NONCONST_TYPEDEF(longdouble, long double, FFI_TYPE_LONGDOUBLE);
++# else
++FFI_TYPEDEF(longdouble, long double, FFI_TYPE_LONGDOUBLE);
++# endif
++#endif
+--- mozjs115-115.14.0.orig/mfbt/tests/TestPoisonArea.cpp
++++ mozjs115-115.14.0/mfbt/tests/TestPoisonArea.cpp
+@@ -138,6 +138,9 @@
+ #elif defined __alpha
+ #  define RETURN_INSTR 0x6bfa8001 /* ret */
+ 
++#elif defined __sw_64__
++#define RETURN_INSTR 0x6bfa8001 /* ret */
++
+ #elif defined __hppa
+ #  define RETURN_INSTR 0xe840c002 /* bv,n r0(rp) */
+ 
